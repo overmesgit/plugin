@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+  "name": "Простой перевод",
+  "version": "1.0",
+  "content_scripts": [
+    {
+      "matches": ["https://news.yandex.ru/*"],
+      "js": [
+        "jquery.min.js",
+        "underscore.min.js",
+        "news.js"
+      ]
+    }
+  ],
+  "permissions": [
+    "tabs"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  }
+}
