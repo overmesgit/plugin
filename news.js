@@ -27,7 +27,7 @@ $(document).ready(function () {
 
 function getTaskUrl(task) {
     var template_url = _.template('https://news.yandex.ru/yandsearch?' +
-    'rel=tm&grhow=clutop&rpt=nnews2&ncrnd=2302&within=777&numdoc=30&' +
+    'rel=tm&rpt=nnews2&within=777&numdoc=30&' +
     'from_day=<%- dateFrom %>&from_month=<%- monthFrom %>&from_year=<%- yearFrom %>&' +
     'p=<%- page %>&text=<%- text %>&' +
     'to_day=<%- dateTo %>&to_month=<%- monthTo %>&to_year=<%- yearTo %>');
@@ -43,16 +43,20 @@ function addMenu() {
     '</div>');
 
     $('#ext-menu button').on('click', function () {
-        var task = getDates();
-        var text = localStorage['queries'];
-        var textArray = text.split(',');
-        task['text'] = textArray.pop();
-        task['page'] = 1;
+        var task = getNextTask();
+    });
+}
 
-        localStorage['queries'] = textArray.join();
+function getNextTask() {
+    var task = getDates();
+    var text = localStorage['queries'];
+    var textArray = text.split(',');
+    task['text'] = textArray.pop();
+    task['page'] = 1;
 
-        return task;
-    })
+    localStorage['queries'] = textArray.join();
+
+    return task;
 }
 
 function getDates() {
