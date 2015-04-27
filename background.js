@@ -35,6 +35,7 @@ function loadNextTask() {
     } else {
         var currentSynonym = synonyms[currentSynonymIndex];
         currentTask = _.clone(dates);
+        currentTask.synonym = currentSynonym;
         currentTask.text = currentSynonym.name;
         currentTask.page = 0;
 
@@ -50,6 +51,7 @@ function loadNextPage(data) {
 
 function saveNews(news) {
     console.log(news);
+    console.log(currentTask.project);
 }
 
 function getStatus(data) {
