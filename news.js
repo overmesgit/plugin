@@ -1,62 +1,78 @@
-var queries = ['тарифы жку', 'миграционная политика'];
-var localStorage = window.localStorage;
-
-if (!localStorage['queries']) {
-    localStorage['queries'] = queries;
-}
-
 $(document).ready(function () {
     var current_query = $('.b-form-input__box input');
-    var next_page = $('a.b-pager__next');
 
-    if (localStorage['currentTask']) {
-        parseNews();
-        if (next_page.length > 0) {
-            chrome.extension.sendRequest({url: next_page[0].href});
+    chrome.extension.sendRequest({type: 'getStatus'}, function (status) {
+        if (status === 'initialize') {
+            addMenu();
         } else {
-            var task = getNextTask();
-            localStorage['currentTask'] = task;
-            chrome.extension.sendRequest({url: getTaskUrl(task)});
+            parseNews();
         }
-    } else {
-        addMenu();
-    }
+
+    });
 
 });
 
 
-function getTaskUrl(task) {
-    var template_url = _.template('https://news.yandex.ru/yandsearch?' +
-    'rel=tm&rpt=nnews2&within=777&numdoc=30&' +
-    'from_day=<%- dateFrom %>&from_month=<%- monthFrom %>&from_year=<%- yearFrom %>&' +
-    'p=<%- page %>&text=<%- text %>&' +
-    'to_day=<%- dateTo %>&to_month=<%- monthTo %>&to_year=<%- yearTo %>');
-    return template_url(task);
+function parseNews() {
+    $('.b-news-groups__news').each(function (i, content){
+        var data = {};
+        var $content = $(content);
+        var titleElement = $content.find('.b-news-groups__news-title a');
+        data.title = titleElement.text();
+        data.url = titleElement.attr('href');
+        data.text = $content.find('.b-news-groups__news-description ').text();
+        data.date = parseDate($content.find('.b-news-groups__news-date-time').text());
+        saveNews(data);
+    });
+
+    var next_page = $('a.b-pager__next');
+    if (next_page.length) {
+        chrome.extension.sendRequest({type: 'loadNextPage'});
+    } else {
+        chrome.extension.sendRequest({type: 'loadNextTask'});
+    }
 }
 
+function saveNews(news) {
+    chrome.extension.sendRequest({type: 'saveNews', data: news});
+}
+
+function parseDate(strDate) {
+    // date 13:44 19.06.14
+    // date 16:16 01.04
+    // date 08:13 вчера
+    // date 23:58
+    var strTime = strDate.slice(0,6);
+    var strDay = strDate.slice(6);
+    var format = '';
+
+    if (strDay === "") {
+        return moment(strDate, "HH:mm").format(format);
+    }
+
+    if (strDay === 'вчера') {
+        return moment(strDate, "HH:mm").subtract(1, 'days').format(format);
+    }
+
+    if (strDay.length === 5) {
+        return moment(strDate, "HH:mm DD.MM").format(format);
+    }
+
+    if (strDay.length === 8) {
+        return moment(strDate, "HH:mm DD.MM.YY").format(format);
+    }
+}
 
 function addMenu() {
     $('body').prepend('<div id="ext-menu" style="height: 100px; background-color: red;">' +
     'From: <input placeholder="date" name="dateFrom"><input placeholder="monthFrom" name="monthFrom"><input placeholder="yearFrom" name="yearFrom">' +
-    'To: <input placeholder="date" name="dateTo"><input placeholder="monthTo" name="monthFrom"><input placeholder="yearFrom" name="yearTo">' +
+    'To: <input placeholder="date" name="dateTo"><input placeholder="monthTo" name="monthTo"><input placeholder="yearTo" name="yearTo">' +
     '<button>Run</button>' +
     '</div>');
 
     $('#ext-menu button').on('click', function () {
-        var task = getNextTask();
+        chrome.extension.sendRequest({type: 'startParsing', data: getDates()});
     });
-}
-
-function getNextTask() {
-    var task = getDates();
-    var text = localStorage['queries'];
-    var textArray = text.split(',');
-    task['text'] = textArray.pop();
-    task['page'] = 1;
-
-    localStorage['queries'] = textArray.join();
-
-    return task;
 }
 
 function getDates() {
@@ -71,6 +87,3 @@ function getDates() {
 
     return res;
 }
-//$.getJSON('https://api.github.com/users/overmes').done(function (result) {
-//    console.log(result);
-//});

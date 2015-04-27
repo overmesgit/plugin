@@ -1,21 +1,25 @@
 {
   "manifest_version": 2,
-  "name": "Простой перевод",
+  "name": "Простой",
   "version": "1.0",
   "content_scripts": [
     {
       "matches": ["https://news.yandex.ru/*"],
+      "exclude_matches": ["https://news.yandex.ru/showcaptcha*"],
       "js": [
         "jquery.min.js",
         "underscore.min.js",
+        "moment.min.js",
         "news.js"
       ]
     }
   ],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "permissions": [
-    "tabs"
+    "tabs",
+    "http://monitor.mediaconsulting.su/"
   ],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["jquery.min.js", "underscore.min.js", "background.js"]
   }
 }
