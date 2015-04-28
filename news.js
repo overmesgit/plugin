@@ -7,21 +7,33 @@ $(document).ready(function () {
         } else {
             parseNews();
         }
-
     });
-
 });
 
 
 function parseNews() {
+    var mainNews = null;
+    var mainTitle = null;
     $('.b-news-groups__news').each(function (i, content){
         var data = {};
         var $content = $(content);
+
         var titleElement = $content.find('.b-news-groups__news-title a');
+        data.source = titleElement.attr('href');
+        data.source_name = $content.find('.b-news-groups__provider-name').text();
+
+        if ($content.parent().hasClass('b-news-group__subset')){
+            data.main_news = mainNews;
+            data.text = mainTitle;
+            data.repost = true;
+        } else {
+            data.text = $content.find('.b-news-groups__news-description ').text();
+            mainNews = data.source;
+            mainTitle = data.text;
+        }
+
         data.title = titleElement.text();
-        data.url = titleElement.attr('href');
-        data.text = $content.find('.b-news-groups__news-description ').text();
-        data.date = parseDate($content.find('.b-news-groups__news-date-time').text());
+        data.date = $content.find('.b-news-groups__news-date-time').text();
         saveNews(data);
     });
 

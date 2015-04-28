@@ -4,6 +4,7 @@ var synonyms = [];
 var currentTask = null;
 var lastDate = null;
 var currentSynonymIndex = -1;
+var requests = 0;
 getSynonims();
 
 chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
@@ -45,13 +46,20 @@ function loadNextTask() {
 }
 
 function loadNextPage(data) {
-    currentTask.page += 1;
-    changeUrl(getTaskUrl(currentTask));
+    if (requests > 20) {
+        setTimeout(loadNextPage, 1000)
+    } else {
+        currentTask.page += 1;
+        changeUrl(getTaskUrl(currentTask));
+    }
 }
 
 function saveNews(news) {
-    console.log(news);
-    console.log(currentTask.project);
+    news['project'] = parseInt(currentTask.synonym.project.split('/').slice(-2, -1));
+    requests += 1;
+    $.post('http://127.0.0.1/news/import/', JSON.stringify(news), function () {
+        requests -= 1;
+    });
 }
 
 function getStatus(data) {
@@ -66,7 +74,7 @@ function changeUrl(url) {
 
 function getTaskUrl(task) {
     var template_url = _.template('https://news.yandex.ru/yandsearch?' +
-    'rel=tm&rpt=nnews2&within=777&numdoc=30&' +
+    'rel=tm&rpt=nnews2&within=777&numdoc=30&showdups=1&' +
     'from_day=<%- dateFrom %>&from_month=<%- monthFrom %>&from_year=<%- yearFrom %>&' +
     'p=<%- page %>&text=<%- text %>&' +
     'to_day=<%- dateTo %>&to_month=<%- monthTo %>&to_year=<%- yearTo %>');
