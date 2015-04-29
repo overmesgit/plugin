@@ -4,6 +4,7 @@ var synonyms = [];
 var currentTask = null;
 var lastDate = null;
 var currentSynonymIndex = -1;
+var newsList = [];
 var requests = 0;
 getSynonims();
 
@@ -30,6 +31,7 @@ function startParsing(data) {
 function loadNextTask() {
     currentSynonymIndex += 1;
 
+    sendAllNews();
     if (currentSynonymIndex >= synonyms.length) {
         currentStatus = 'initialize';
         changeUrl('https://news.yandex.ru/');
@@ -46,20 +48,28 @@ function loadNextTask() {
 }
 
 function loadNextPage(data) {
-    if (requests > 20) {
+
+    if (requests > 2) {
         setTimeout(loadNextPage, 1000)
     } else {
+        sendAllNews();
         currentTask.page += 1;
         changeUrl(getTaskUrl(currentTask));
     }
 }
 
-function saveNews(news) {
-    news['project'] = parseInt(currentTask.synonym.project.split('/').slice(-2, -1));
+function sendAllNews() {
+    var filledList = newsList;
+    newsList = [];
     requests += 1;
-    $.post('http://127.0.0.1/news/import/', JSON.stringify(news), function () {
+    $.post('http://monitor.mediaconsulting.su//news/import/', JSON.stringify(filledList)).always(function () {
         requests -= 1;
     });
+}
+
+function saveNews(news) {
+    news['project'] = parseInt(currentTask.synonym.project.split('/').slice(-2, -1));
+    newsList.push(news);
 }
 
 function getStatus(data) {
@@ -76,7 +86,7 @@ function getTaskUrl(task) {
     var template_url = _.template('https://news.yandex.ru/yandsearch?' +
     'rel=tm&rpt=nnews2&within=777&numdoc=30&showdups=1&' +
     'from_day=<%- dateFrom %>&from_month=<%- monthFrom %>&from_year=<%- yearFrom %>&' +
-    'p=<%- page %>&text=<%- text %>&' +
+    'p=<%- page %>&text=<%= text %>&' +
     'to_day=<%- dateTo %>&to_month=<%- monthTo %>&to_year=<%- yearTo %>');
     return template_url(task);
 }
