@@ -77,25 +77,40 @@ function parseDate(strDate) {
 
 function addMenu() {
     $('body').prepend('<div id="ext-menu" style="height: 100px; background-color: red;">' +
-    'From: <input placeholder="date" name="dateFrom"><input placeholder="monthFrom" name="monthFrom"><input placeholder="yearFrom" name="yearFrom">' +
-    'To: <input placeholder="date" name="dateTo"><input placeholder="monthTo" name="monthTo"><input placeholder="yearTo" name="yearTo">' +
+    'From: <input id="datepickerFrom">' +
+    'To: <input id="datepickerTo">' +
+    'Projct: <input type="text" id="projectId" placeholder="project id"/>' +
     '<button>Run</button>' +
     '</div>');
 
+    $( "#datepickerFrom" ).datepicker({
+        inline: true,
+        dateFormat: "dd.mm.yy"
+    });
+
+    $( "#datepickerTo" ).datepicker({
+        inline: true,
+        dateFormat: "dd.mm.yy"
+    });
+
     $('#ext-menu button').on('click', function () {
-        chrome.extension.sendRequest({type: 'startParsing', data: getDates()});
+        var parsedValue = parseInt($('#projectId').val());
+        var projectId = isNaN(parsedValue) ? null: parsedValue;
+        chrome.extension.sendRequest({type: 'startParsing', data: {dates: getDates(), projectId: projectId}});
     });
 }
 
 function getDates() {
     var res = {};
-    res['dateFrom'] = $('#ext-menu [name=dateFrom]').val();
-    res['monthFrom'] = $('#ext-menu [name=monthFrom]').val();
-    res['yearFrom'] = $('#ext-menu [name=yearFrom]').val();
+    var strDateFromArray = $('#datepickerFrom').val().split('.');
+    res['dateFrom'] = parseInt(strDateFromArray[0]);
+    res['monthFrom'] = parseInt(strDateFromArray[1]);
+    res['yearFrom'] = parseInt(strDateFromArray[2]);
 
-    res['dateTo'] = $('#ext-menu [name=dateTo]').val();
-    res['monthTo'] = $('#ext-menu [name=monthTo]').val();
-    res['yearTo'] = $('#ext-menu [name=yearTo]').val();
+    var strDateToArray = $('#datepickerTo').val().split('.');
+    res['dateTo'] = parseInt(strDateToArray[0]);
+    res['monthTo'] = parseInt(strDateToArray[1]);
+    res['yearTo'] = parseInt(strDateToArray[2]);
 
     return res;
 }

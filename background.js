@@ -2,10 +2,10 @@ var currentStatus = 'initialize';
 var dates = null;
 var synonyms = [];
 var currentTask = null;
-var lastDate = null;
 var currentSynonymIndex = -1;
 var newsList = [];
 var requests = 0;
+var currentProjectId = null;
 getSynonims();
 
 chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
@@ -23,7 +23,8 @@ chrome.extension.onRequest.addListener(function (request, sender, sendResponse) 
 });
 
 function startParsing(data) {
-    dates = data;
+    dates = data['dates'];
+    currentProjectId = data['projectId'];
     currentStatus = 'parsing';
     loadNextTask();
 }
@@ -34,6 +35,8 @@ function loadNextTask() {
     sendAllNews();
     if (currentSynonymIndex >= synonyms.length) {
         currentStatus = 'initialize';
+        currentProjectId = null;
+        currentTask = null;
         changeUrl('https://news.yandex.ru/');
     } else {
         var currentSynonym = synonyms[currentSynonymIndex];
@@ -41,8 +44,13 @@ function loadNextTask() {
         currentTask.synonym = currentSynonym;
         currentTask.text = currentSynonym.name;
         currentTask.page = 0;
+        currentTask.project = getTaskProject(currentSynonym);
+        if (currentProjectId && currentProjectId != currentTask.project) {
+            loadNextTask();
+        } else {
+            changeUrl(getTaskUrl(currentTask));
+        }
 
-        changeUrl(getTaskUrl(currentTask));
     }
 
 }
@@ -68,8 +76,12 @@ function sendAllNews() {
 }
 
 function saveNews(news) {
-    news['project'] = parseInt(currentTask.synonym.project.split('/').slice(-2, -1));
+    news['project'] = currentTask.project;
     newsList.push(news);
+}
+
+function getTaskProject(synonim) {
+    return parseInt(synonim.project.split('/').slice(-2, -1));
 }
 
 function getStatus(data) {

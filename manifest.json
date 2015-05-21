@@ -10,7 +10,11 @@
         "jquery.min.js",
         "underscore.min.js",
         "moment.min.js",
-        "news.js"
+        "news.js",
+        "jquery-ui.min.js"
+      ],
+      "css": [
+          "jquery-ui.min.css"
       ]
     }
   ],
