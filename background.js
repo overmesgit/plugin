@@ -1,12 +1,17 @@
-var currentStatus = 'initialize';
-var dates = null;
-var synonyms = [];
-var currentTask = null;
-var currentSynonymIndex = -1;
-var newsList = [];
-var requests = 0;
-var currentProjectId = null;
+var currentStatus, dates, synonyms, currentTask, currentSynonymIndex, newsList, requests, currentProjectId;
+initialize();
 getSynonims();
+
+function initialize() {
+    currentStatus = 'initialize';
+    dates = null;
+    synonyms = [];
+    currentTask = null;
+    currentSynonymIndex = -1;
+    newsList = [];
+    requests = 0;
+    currentProjectId = null;
+}
 
 chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
     var data = request['data'];
@@ -34,9 +39,8 @@ function loadNextTask() {
 
     sendAllNews();
     if (currentSynonymIndex >= synonyms.length) {
-        currentStatus = 'initialize';
-        currentProjectId = null;
-        currentTask = null;
+        sendAllNews();
+        initialize();
         changeUrl('https://news.yandex.ru/');
     } else {
         var currentSynonym = synonyms[currentSynonymIndex];
