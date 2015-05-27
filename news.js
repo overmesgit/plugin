@@ -14,30 +14,22 @@ $(document).ready(function () {
 function parseNews() {
     var mainNews = null;
     var mainTitle = null;
-    $('.b-news-groups__news').each(function (i, content){
+    $('.search-list .search-item .document').each(function (i, content){
         var data = {};
         var $content = $(content);
 
-        var titleElement = $content.find('.b-news-groups__news-title a');
+        var titleElement = $content.find('.document__title a');
         data.source = titleElement.attr('href');
-        data.source_name = $content.find('.b-news-groups__provider-name').text();
+        data.source_name = $content.find('.document__provider-name').text();
 
-        if ($content.parent().hasClass('b-news-group__subset')){
-            data.main_news = mainNews;
-            data.text = mainTitle;
-            data.repost = true;
-        } else {
-            data.text = $content.find('.b-news-groups__news-description ').text();
-            mainNews = data.source;
-            mainTitle = data.text;
-        }
+        data.text = $content.find('.document__snippet').text();
 
         data.title = titleElement.text();
-        data.date = $content.find('.b-news-groups__news-date-time').text();
+        data.date = $content.find('.document__time').text();
         saveNews(data);
     });
 
-    var next_page = $('a.b-pager__next');
+    var next_page = $('.pager__group .button:contains("Следующая")');
     if (next_page.length) {
         chrome.extension.sendRequest({type: 'loadNextPage'});
     } else {

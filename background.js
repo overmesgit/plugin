@@ -5,7 +5,7 @@ getSynonims();
 function initialize() {
     currentStatus = 'initialize';
     dates = null;
-    synonyms = [];
+    synonyms = synonyms && synonyms.length > 0 ? synonyms : [];
     currentTask = null;
     currentSynonymIndex = -1;
     newsList = [];
@@ -39,7 +39,6 @@ function loadNextTask() {
 
     sendAllNews();
     if (currentSynonymIndex >= synonyms.length) {
-        sendAllNews();
         initialize();
         changeUrl('https://news.yandex.ru/');
     } else {
@@ -71,12 +70,16 @@ function loadNextPage(data) {
 }
 
 function sendAllNews() {
-    var filledList = newsList;
-    newsList = [];
-    requests += 1;
-    $.post('http://monitor.mediaconsulting.su//news/import/', JSON.stringify(filledList)).always(function () {
-        requests -= 1;
-    });
+    if (newsList.length > 0) {
+        var filledList = newsList;
+        newsList = [];
+        requests += 1;
+        var url = 'http://monitor.mediaconsulting.su/news/import/';
+        //var url = 'http://127.0.0.1/news/import/';
+        $.post(url, JSON.stringify(filledList)).always(function () {
+            requests -= 1;
+        });
+    }
 }
 
 function saveNews(news) {
