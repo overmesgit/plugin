@@ -1,4 +1,6 @@
 var currentStatus, dates, synonyms, currentTask, currentSynonymIndex, newsList, requests, currentProjectId;
+var serverAddress = 'http://monitor.mediaconsulting.su';
+//var serverAddress = 'http://127.0.0.1:8000';
 initialize();
 getSynonims();
 
@@ -74,7 +76,7 @@ function sendAllNews() {
         var filledList = newsList;
         newsList = [];
         requests += 1;
-        var url = 'http://monitor.mediaconsulting.su/news/import/';
+        var url = serverAddress + '/news/import/';
         //var url = 'http://127.0.0.1/news/import/';
         $.post(url, JSON.stringify(filledList)).always(function () {
             requests -= 1;
@@ -111,7 +113,7 @@ function getTaskUrl(task) {
 }
 
 function getSynonims() {
-    var url = 'http://monitor.mediaconsulting.su/api/synonym/';
+    var url = serverAddress + '/api/synonym/';
     $.getJSON(url, {project__parsing_status: 'RUN', 'limit': 0}, function (result) {
         synonyms = result.objects;
     })
