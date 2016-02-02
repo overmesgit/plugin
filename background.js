@@ -1,8 +1,7 @@
-var currentStatus, dates, synonyms, currentTask, currentSynonymIndex, newsList, requests, currentProjectId;
+var currentStatus, dates, synonyms, currentTask, currentSynonymIndex, newsList, requests, currentProjectId, currentTab;
 var serverAddress = 'http://monitor.mediaconsulting.su';
 //var serverAddress = 'http://127.0.0.1:8000';
 initialize();
-getSynonims();
 
 function initialize() {
     currentStatus = 'initialize';
@@ -32,8 +31,17 @@ chrome.extension.onRequest.addListener(function (request, sender, sendResponse) 
 function startParsing(data) {
     dates = data['dates'];
     currentProjectId = data['projectId'];
+    var apiKey = data['apiKey'];
     currentStatus = 'parsing';
-    loadNextTask();
+    chrome.tabs.getSelected(function(tab){
+        currentTab = tab;
+        getSynonims(apiKey, function (result) {
+            synonyms = result.objects;
+            loadNextTask();
+        });
+    });
+
+
 }
 
 function loadNextTask() {
@@ -98,9 +106,7 @@ function getStatus(data) {
 }
 
 function changeUrl(url) {
-    chrome.tabs.getSelected(null, function(tab){
-        if (tab) chrome.tabs.update(tab.id, {url: url});
-    });
+    chrome.tabs.update(currentTab.id, {url: url});
 }
 
 function getTaskUrl(task) {
@@ -112,10 +118,8 @@ function getTaskUrl(task) {
     return template_url(task);
 }
 
-function getSynonims() {
-    var url = serverAddress + '/api/synonym/';
-    $.getJSON(url, {project__parsing_status: 'RUN', 'limit': 0}, function (result) {
-        synonyms = result.objects;
-    })
+function getSynonims(apiKey, callback) {
+    var url = serverAddress + '/api/public-synonym/?api_key=' + apiKey;
+    $.getJSON(url, {project__parsing_status: 'RUN', 'limit': 0}, callback)
 }
 

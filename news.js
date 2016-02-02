@@ -69,9 +69,10 @@ function parseDate(strDate) {
 
 function addMenu() {
     $('body').prepend('<div id="ext-menu" style="height: 100px; background-color: red;">' +
-    'From: <input id="datepickerFrom">' +
-    'To: <input id="datepickerTo">' +
-    'Projct: <input type="text" id="projectId" placeholder="project id"/>' +
+    ' ApiKey: <input id="apiKey" type="text">' +
+    ' From: <input id="datepickerFrom" style="position: relative; z-index: 100000;">' +
+    ' To: <input id="datepickerTo" style="position: relative; z-index: 100000;">' +
+    ' Project: <input type="text" id="projectId" placeholder="project id"/>' +
     '<button>Run</button>' +
     '</div>');
 
@@ -88,7 +89,10 @@ function addMenu() {
     $('#ext-menu button').on('click', function () {
         var parsedValue = parseInt($('#projectId').val());
         var projectId = isNaN(parsedValue) ? null: parsedValue;
-        chrome.extension.sendRequest({type: 'startParsing', data: {dates: getDates(), projectId: projectId}});
+        var apiKey = $('#apiKey').val();
+        chrome.extension.sendRequest({type: 'startParsing',
+            data: {dates: getDates(), projectId: projectId, apiKey: apiKey}
+        });
     });
 }
 
