@@ -32,10 +32,11 @@ function startParsing(data) {
     dates = data['dates'];
     currentProjectId = data['projectId'];
     var apiKey = data['apiKey'];
+    var userName = data['userName'];
     currentStatus = 'parsing';
     chrome.tabs.getSelected(function(tab){
         currentTab = tab;
-        getSynonims(apiKey, function (result) {
+        getSynonims(apiKey, userName, function (result) {
             synonyms = result.objects;
             loadNextTask();
         });
@@ -118,8 +119,17 @@ function getTaskUrl(task) {
     return template_url(task);
 }
 
-function getSynonims(apiKey, callback) {
-    var url = serverAddress + '/api/public-synonym/?api_key=' + apiKey;
-    $.getJSON(url, {project__parsing_status: 'RUN', 'limit': 0}, callback)
+function getSynonims(apiKey, userName, callback) {
+    var url = serverAddress + '/api/public-synonym/';
+    $.getJSON(url, {project__parsing_status: 'RUN', 'limit': 0, 'api_key': apiKey, 'username': userName}, callback)
+        .fail(function(jqxhr, textStatus, error) {
+            if (jqxhr.status != 200) {
+                if (jqxhr.status == 401) {
+                    alert("Не удалось авторизоваться на сервере")
+                } else {
+                    alert("Ошибка на сервере: " + error)
+                }
+            }
+        });
 }
 

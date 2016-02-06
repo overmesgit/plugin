@@ -68,13 +68,19 @@ function parseDate(strDate) {
 }
 
 function addMenu() {
-    $('body').prepend('<div id="ext-menu" style="height: 100px; background-color: red;">' +
-    ' ApiKey: <input id="apiKey" type="text">' +
-    ' From: <input id="datepickerFrom" style="position: relative; z-index: 100000;">' +
-    ' To: <input id="datepickerTo" style="position: relative; z-index: 100000;">' +
-    ' Project: <input type="text" id="projectId" placeholder="project id"/>' +
-    '<button>Run</button>' +
-    '</div>');
+    $('body').prepend('<div id="ext-menu" style="height: 100px; background-color: red;"><table>' +
+    '<tr>' +
+        '<td>UserName:</td><td><input id="userName" type="text"></td>' +
+        '<td>ApiKey:</td><td><input id="apiKey" type="text"></td>' +
+    '</tr>' +
+    '<tr>' +
+        '<td>From:</td><td><input id="datepickerFrom" style="position: relative; z-index: 100000;"></td>' +
+        '<td>To:</td><td><input id="datepickerTo" style="position: relative; z-index: 100000;"></tr>' +
+    '<tr>' +
+        '<td>Project:</td><td><input type="text" id="projectId" placeholder="project id"/></td>' +
+        '<td><button>Старт</button>' +
+    '</tr>' +
+    '</table></div>');
 
     $( "#datepickerFrom" ).datepicker({
         inline: true,
@@ -90,9 +96,14 @@ function addMenu() {
         var parsedValue = parseInt($('#projectId').val());
         var projectId = isNaN(parsedValue) ? null: parsedValue;
         var apiKey = $('#apiKey').val();
-        chrome.extension.sendRequest({type: 'startParsing',
-            data: {dates: getDates(), projectId: projectId, apiKey: apiKey}
-        });
+        var userName = $('#userName').val();
+        var dateFrom = $('#datepickerFrom').val();
+        var dateTo = $('#datepickerTo').val();
+        if (apiKey.length && userName.length && dateFrom.length && dateTo.length) {
+            chrome.extension.sendRequest({type: 'startParsing',
+                data: {dates: getDates(), projectId: projectId, apiKey: apiKey, userName: userName}
+            });
+        }
     });
 }
 
